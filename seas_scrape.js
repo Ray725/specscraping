@@ -1,5 +1,19 @@
 var request = require('request');
 var cheerio = require('cheerio');
+var download = require('image-downloader');
+
+function img_downloader(imgurl) {
+  const options = {
+    url: imgurl,
+    dest: './'
+  }
+
+  download.image(options).then(({filename, image}) => {
+    console.log("file saved to", filename);
+  }).catch((err) => {
+    throw err;
+  });
+}
 
 function get_urls(url, callback) {
   var urls = [];
@@ -14,8 +28,7 @@ function get_urls(url, callback) {
     var m;
     var rex = /src="([^"]+)"/g;
 
-    var count = $('div.content p').length;
-    var i = 0;
+    // var count = $('div.content p').length;
 
     $('div.content p').each(function() {
       do {
@@ -24,16 +37,28 @@ function get_urls(url, callback) {
           urls.push(m[1]);
         }
       } while(m);
-
-      i++;
-      if(i >= count) {
-        return callback(urls);
-      }
+      return callback(urls);
     });
 
   });
 }
 
-get_urls('http://bulletin.engineering.columbia.edu/undergraduate-degree-tracks-0', function(urls) {
-  console.log(urls);
+get_urls('http://bulletin.engineering.columbia.edu/undergraduate-degree-tracks', function(urls) {
+  urls.map(function(url) {
+    img_downloader('http://bulletin.engineering.columbia.edu' + url);
+  });
 });
+
+get_urls('http://bulletin.engineering.columbia.edu/bachelor-science-degree-tracks', function(urls) {
+  urls.map(function(url) {
+    img_downloader('http://bulletin.engineering.columbia.edu' + url);
+  });
+});
+
+for(var i = 0; i <= 9; i++) {
+  get_urls("http://bulletin.engineering.columbia.edu/undergraduate-degree-tracks" + `-${i}`, function(urls) {
+    urls.map(function(url) {
+      img_downloader('http://bulletin.engineering.columbia.edu' + url);
+    });
+  });
+}
